@@ -1,0 +1,263 @@
+@import '~antd/dist/antd.less';
+@import './themes/theme08.less';
+@import './overwrites.less';
+@import './fonts.less';
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: sans-serif;
+}
+
+.vstretch {
+    height: 100%;
+}
+
+.htcenter {
+    text-align: center;
+}
+
+.ant-table-thead>tr>th {
+    font-weight: bold;
+}
+
+.toolbar {
+    padding: 10px;
+    border-bottom: 1px solid @border-color-base;
+}
+
+.statusbar {
+    font-size: 13px;
+    padding: 2px 6px 3px 6px;
+    border-top: 1px solid @border-color-base;
+}
+
+.bd-bottom {
+    border-bottom: 1px solid @border-color-base;
+}
+
+.bd-right {
+    border-right: 1px solid @border-color-base;
+}
+
+.layout-v {
+    display: flex;
+    flex-direction: column;
+}
+
+.layout-h {
+    display: flex;
+    flex-direction: row;
+}
+
+.layout-h.center {
+    align-items: center;
+}
+
+.layout-v>.fill,
+.layout-h>.fill {
+    flex: 1;
+}
+
+.content {
+    padding: 0 20px;
+    background-color: white;
+}
+
+.content.md {
+    padding: 0 15px;
+    background-color: white;
+}
+
+.content.sm {
+    padding: 0 10px;
+    background-color: white;
+}
+
+.content-table {
+    margin: 0;
+}
+
+.layout-header-primary {
+    display: flex;
+    background-color: @primary-color;
+}
+
+.sp-left {
+    margin-left: 5px !important;
+}
+
+.sp-left- {
+    margin-left: 5px;
+}
+
+.sp-left-md {
+    margin-left: 10px;
+}
+
+.sp-left-lg {
+    margin-left: 15px;
+}
+
+.sp-left-gt {
+    margin-left: 20px;
+}
+
+.sp-bottom-gt {
+    margin-bottom: 20px;
+}
+
+.sp-bottom-lg {
+    margin-bottom: 15px;
+}
+
+.sp-bottom-md {
+    margin-bottom: 10px;
+}
+
+.anticon.tableicon {
+    font-size: 18px; // margin: -5px 0;
+    vertical-align: text-bottom;
+}
+
+.anticon.success {
+    color: @success-color;
+}
+
+.anticon.error {
+    color: @error-color;
+}
+
+.anticon.warn {
+    color: @warning-color;
+}
+
+.anticon.info {
+    color: @info-color;
+}
+
+.ant-spin.tablespin {
+    margin: -6px 0;
+}
+
+.floatr {
+    float: right;
+}
+
+.floatl {
+    float: left;
+}
+
+.tb-col-right {
+    text-align: right !important;
+}
+
+.btn-autosize {
+    width: auto;
+    height: auto;
+}
+
+.btn-bd-hover {
+    border-width: 1;
+    border-color: transparent;
+}
+
+.btn-bd-focus-none:focus {
+    border-width: 1;
+    border-color: transparent;
+}
+
+.btn-bd-hover:hover {
+    border-width: 1;
+    border-color: @primary-hover-5 ;
+    background-color: @primary-hover-2 ;
+}
+
+.btn-bd-hover:active {
+    border-width: 1;
+    border-color: @primary-hover-8 ;
+    background-color: @primary-hover-5 ;
+}
+
+.btn-bd-none {
+    border-width: 1px;
+    border-color: transparent !important;
+}
+
+.btn-bk-hover {
+    background-color: transparent !important;
+}
+
+.btn-bk-hover:hover {
+    background-color: @primary-hover-2  !important;
+}
+
+.btn-bk-hover:active {
+    background-color: @primary-hover-5  !important;
+}
+
+.btn-pd-lg {
+    padding: 20px;
+}
+
+.btn-pd-md {
+    padding: 15px;
+}
+
+.btn-pd {
+    padding: 10px;
+}
+
+.btn-pd-sm {
+    padding: 5px;
+}
+
+.pd-sm {
+    padding: 5px;
+}
+
+.pd-md {
+    padding: 10px;
+}
+
+.pd {
+    padding: 15px;
+}
+
+.pd-lg {
+    padding: 20px;
+}
+
+.bd {
+    border: 1px solid @border-color-base;
+}
+
+.bd-hover-none {
+    border: 1px solid @border-color-base;
+}
+
+.bd-hover-none:hover {
+    border: 1px solid transparent;
+}
+
+.bd-hover-none:active {
+    border: 1px solid transparent;
+}
+
+.vscroll {
+    overflow-y: auto;
+}
+
+.sider-panel {
+    height: 100%;
+}
+
+.sider-title {
+    font-size: 22px;
+    color: @primary-color;
+    margin: 10px 10px 5px 15px;
+}
+
+.slave-text {
+    color: @text-color-1;
+}
