@@ -2,8 +2,9 @@ import React from 'react';
 import Component from '../../../framework/route-component';
 import { Layout } from 'antd';
 import RenderCanvas from '../../../framework/render-canvas';
+import img from './1.jpg';
 
-export class WebGL_Start extends Component {
+export class WebGL_Texture extends Component {
 
     state = {
     }
@@ -13,7 +14,7 @@ export class WebGL_Start extends Component {
     createRouteDescriptor() {
         return {
             location: this.props.match.path,
-            title: 'WebGL-Start',
+            title: 'WebGL-Texture',
             group: 'home',
         }
     }
@@ -36,12 +37,12 @@ export class WebGL_Start extends Component {
         ];
 
         var colors = [
-            5, 3, 7, 5, 3, 7, 5, 3, 7, 5, 3, 7,
-            1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 3,
-            0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-            1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
-            1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0,
-            0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0
+            0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+            0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+            0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+            0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+            0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+            0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
         ];
 
         var indices = [
@@ -71,17 +72,18 @@ export class WebGL_Start extends Component {
             'uniform mat4 Pmatrix;' +
             'uniform mat4 Vmatrix;' +
             'uniform mat4 Mmatrix;' +
-            'attribute vec3 color;' +//the color of the point
-            'varying vec3 vColor;' +
+            "attribute vec2 a_TextCoord;" + // 接受纹理坐标
+            "varying vec2 v_TexCoord;" +    // 传递纹理坐标
             'void main(void) { ' +//pre-built function
             'gl_Position = Pmatrix*Vmatrix*Mmatrix*vec4(position, 1.);' +
-            'vColor = color;' +
+            "v_TexCoord = a_TextCoord; " +  // 设置纹理坐标
             '}';
 
         var fragCode = 'precision mediump float;' +
-            'varying vec3 vColor;' +
+            "uniform sampler2D u_Sampler;" + // 取样器
+            "varying vec2 v_TexCoord;" +  // 接受纹理坐标
             'void main(void) {' +
-            'gl_FragColor = vec4(vColor, 1.);' +
+            "gl_FragColor = texture2D(u_Sampler, v_TexCoord);" +  // 设置颜色
             '}';
 
         var vertShader = gl.createShader(gl.VERTEX_SHADER);
@@ -108,10 +110,51 @@ export class WebGL_Start extends Component {
         gl.enableVertexAttribArray(_position);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
-        var _color = gl.getAttribLocation(shaderprogram, "color");
-        gl.vertexAttribPointer(_color, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(_color);
+        var a_TextCoord = gl.getAttribLocation(shaderprogram, "a_TextCoord");
+        gl.vertexAttribPointer(a_TextCoord, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_TextCoord);
+
+        //创建纹理对象
+        var texture = gl.createTexture();
+        //获取u_Sampler的存储位置
+        var u_Sampler = gl.getUniformLocation(shaderprogram, 'u_Sampler');
+
+        //创建image对象
+        var image = new Image();
+        //加载纹理
+        image.onload = function () { loadTexture(gl, texture, u_Sampler, image); };
+        // 浏览器开始加载图片 注意：一定是2^mx2^n尺寸的图片
+        image.src = img;
+
+
         gl.useProgram(shaderprogram);
+
+
+        let installed = false;
+
+        function loadTexture(gl, texture, u_Sampler, image) {
+
+            debugger;
+            //1.对纹理图像进行Y轴反转
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+            //2.开启0号纹理单元
+            gl.activeTexture(gl.TEXTURE0);
+            //3.向target绑定纹理对象
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            //4.配置纹理参数
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            //5.配置纹理图像
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+
+            //6.将0号纹理图像传递给着色器
+            gl.uniform1i(u_Sampler, 0);
+            installed = true;
+        }
+
+
+
+
 
         /*==================== MATRIX ====================== */
 
@@ -230,17 +273,20 @@ export class WebGL_Start extends Component {
 
             // gl.depthFunc(gl.LEQUAL);
 
-            gl.clearColor(0, 0, 0, 1);
-            gl.clearDepth(1.0);
-            gl.viewport(0.0, 0.0, gl.canvas.width, gl.canvas.height);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            // if (installed) {
 
-            gl.uniformMatrix4fv(_Pmatrix, false, proj_matrix);
-            gl.uniformMatrix4fv(_Vmatrix, false, view_matrix);
-            gl.uniformMatrix4fv(_Mmatrix, false, mo_matrix);
+                gl.clearColor(0, 0, 0, 1);
+                gl.clearDepth(1.0);
+                gl.viewport(0.0, 0.0, gl.canvas.width, gl.canvas.height);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
-            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+                gl.uniformMatrix4fv(_Pmatrix, false, proj_matrix);
+                gl.uniformMatrix4fv(_Vmatrix, false, view_matrix);
+                gl.uniformMatrix4fv(_Mmatrix, false, mo_matrix);
+
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+                gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+            // }
 
             window.requestAnimationFrame(animate);
         }

@@ -5,16 +5,30 @@ import { Layout, Menu, Icon } from 'antd';
 import WebsiteNavigator from './website-navigator';
 
 import { WebGL_Start } from './webgl-start';
+import { WebGL_Texture } from './webgl-texture';
+import { WebGL_Global } from './webgl-global';
 
 const { SubMenu } = Menu;
 const { Sider } = Layout;
 
 const samples = [
     {
-        name: 'services',
+        name: 'start',
         title: 'Start',
         icon: 'file-text',
         component: WebGL_Start,
+    },
+    {
+        name: 'texture',
+        title: 'Texture',
+        icon: 'file-text',
+        component: WebGL_Texture,
+    },
+    {
+        name: 'global',
+        title: 'Global',
+        icon: 'file-text',
+        component: WebGL_Global,
     }
 ];
 
