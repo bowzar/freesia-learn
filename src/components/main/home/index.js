@@ -7,6 +7,7 @@ import WebsiteNavigator from './website-navigator';
 import { WebGL_Start } from './webgl-start';
 import { WebGL_Texture } from './webgl-texture';
 import { WebGL_Global } from './webgl-global';
+import { WebGL_Scene } from './webgl-scene';
 
 const { SubMenu } = Menu;
 const { Sider } = Layout;
@@ -29,6 +30,12 @@ const samples = [
         title: 'Global',
         icon: 'file-text',
         component: WebGL_Global,
+    },
+    {
+        name: 'scene',
+        title: 'Scene',
+        icon: 'file-text',
+        component: WebGL_Scene,
     }
 ];
 
