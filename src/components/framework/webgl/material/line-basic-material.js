@@ -2,7 +2,7 @@ import { Matrix4, Vector3 } from 'math.gl';
 
 import Material from './material';
 
-export default class BasicMaterial extends Material {
+export default class LineBasicMaterial extends Material {
 
     vertCode =
         'attribute vec4 position;' +
@@ -47,12 +47,9 @@ export default class BasicMaterial extends Material {
         gl.vertexAttribPointer(this.position, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(this.position);
 
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.geometry.index_buffer);
-
         let m = this.createViewMatrix(camera, mesh);
         gl.uniformMatrix4fv(this.matrix, false, m);
-
-        gl.drawElements(gl.TRIANGLES, mesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+        gl.drawArrays(gl.LINES, 0, mesh.geometry.vertices.length / 3);
     }
 
     createViewMatrix(camera, mesh) {

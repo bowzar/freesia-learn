@@ -1,6 +1,6 @@
 import Geometry from './geometry';
 
-export default class CubeGeometry extends Geometry {
+export default class Cube extends Geometry {
 
     constructor(x = 100, y = 100, z = 100) {
         super();

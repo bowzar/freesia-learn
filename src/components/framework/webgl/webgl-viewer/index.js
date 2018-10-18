@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { ProgramCenter } from '../program';
 
 export default class WebGLViewer extends Component {
 
@@ -6,11 +7,24 @@ export default class WebGLViewer extends Component {
     domParent = null;
     gl = null;
     args = { antialias: true };
+    programCenter = null;
+    camera = null;
+    scene = null;
+
+    setCamera(camera) {
+        this.camera = camera;
+    }
+
+    setScene(scene) {
+        this.scene = scene;
+    }
 
     componentDidMount() {
         this.dom = document.getElementById('webgl-canvas');
         this.domParent = this.dom.parentElement;
-        this.gl = this.dom.getContext('webgl', this.args);
+        this.gl = this.dom.getContext('experimental-webgl');
+
+        this.programCenter = new ProgramCenter(this.gl);
 
         this.handlerResize = this.resize.bind(this);
         window.addEventListener("resize", this.handlerResize, false);
@@ -34,13 +48,14 @@ export default class WebGLViewer extends Component {
             this.props.resize(this.dom.width, this.dom.height);
     }
 
-    update(scene, camera) {
-        scene.update(this.gl, camera);
+    update() {
+        if (this.scene && this.camera)
+            this.scene.update(this, this.camera);
     }
 
     render() {
         return (
-            <canvas id="webgl-canvas" />
+            <canvas id="webgl-canvas" tabIndex="1" />
         );
     }
 }

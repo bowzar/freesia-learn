@@ -11,7 +11,7 @@ export default class Mesh {
         this.material = material;
     }
 
-    update(gl, camera) {
-        this.material.update(gl, camera, this);
+    update(viewer, camera) {
+        this.material.update(viewer, camera, this);
     }
 }

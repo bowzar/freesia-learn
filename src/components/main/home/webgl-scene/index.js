@@ -1,7 +1,8 @@
 import React from 'react';
 import Component from '../../../framework/route-component';
 import { Layout, Button, Divider } from 'antd';
-import { WebGLViewer, Camera, Scene, Mesh, BasicMaterial, Cube } from '../../../framework/webgl';
+import { WebGLViewer, Camera, Scene, Vector3, Mesh, BasicMaterial, Cube, Rectangle, Line, LineBasicMaterial, PluginMouse } from '../../../framework/webgl';
+import { PluginWorldCamera } from '../../../framework/webgl/plugins';
 
 export class WebGL_Scene extends Component {
 
@@ -10,6 +11,8 @@ export class WebGL_Scene extends Component {
     camera = null;
     scene = null;
     mesh = null;
+
+    pluginWorldCamera = null;
 
     state = {
     }
@@ -35,8 +38,10 @@ export class WebGL_Scene extends Component {
             if (this.shutdown)
                 return;
 
-            if (this.viewer && this.scene && this.camera)
-                this.viewer.update(this.scene, this.camera);
+            if (this.viewer)
+                this.viewer.update();
+            if (this.pluginWorldCamera)
+                this.pluginWorldCamera.update();
 
             window.requestAnimationFrame(render);
         };
@@ -46,34 +51,77 @@ export class WebGL_Scene extends Component {
 
     componentWillUnmount() {
         this.shutdown = true;
+
+        this.pluginWorldCamera.uninstall();
+        localStorage.pluginWorldCamera = this.pluginWorldCamera.toJson();
     }
 
     createWebGLObjects() {
 
-        this.scene = new Scene();
-        this.camera = new Camera(35, 1, 1000);
+        this.scene = new Scene({ color: 0xffffff });
+        this.camera = new Camera(35, 1, 10000);
         this.camera.setAspect(this.viewer.gl.canvas.width / this.viewer.gl.canvas.height)
-        this.camera.locator.translation.z = 400;
-        this.camera.locator.translation.y = 100;
-        this.camera.locator.lookAt([0, 0, 0], [0, 1, 0]);
+        this.viewer.setCamera(this.camera);
+        this.viewer.setScene(this.scene);
 
-        let geometry = new Cube(50, 50, 50);
-        let material = new BasicMaterial();
+        let opts = {};
+        try {
+            opts = JSON.parse(localStorage.pluginWorldCamera);
+        }
+        catch (error) {
+        }
+
+        this.pluginWorldCamera = new PluginWorldCamera(this.viewer, opts);
+        this.pluginWorldCamera.install();
+
+        let width = 5000;
+        let height = 5000;
+        let geometry = new Rectangle(width, height);
+        let material = new BasicMaterial({ color: 0x0, opacity: .5 });
         this.mesh = new Mesh(geometry, material);
         this.scene.add(this.mesh);
 
+        let step = 50;
+        for (let x = -width / 2; x <= width / 2; x += step) {
+
+            geometry = new Line(new Vector3(x, -height / 2, 0), new Vector3(x, height / 2, 0));
+            material = new LineBasicMaterial({ color: 0xdddddd, opacity: 1 });
+            let line = new Mesh(geometry, material);
+            line.locator.translation.z = 1;
+            line.locator.refreshMatrix();
+            this.scene.add(line);
+
+            geometry = new Line(new Vector3(-height / 2, x, 0), new Vector3(height / 2, x, 0));
+            material = new LineBasicMaterial({ color: 0xdddddd, opacity: 1 });
+            line = new Mesh(geometry, material);
+            line.locator.translation.z = 1;
+            line.locator.refreshMatrix();
+            this.scene.add(line);
+        }
+
         geometry = new Cube(50, 50, 50);
-        material = new BasicMaterial();
+        material = new BasicMaterial({ color: 0x0000ff, opacity: 1 });
+        this.mesh = new Mesh(geometry, material);
+        this.mesh.locator.translation.z = 26;
+        this.mesh.locator.refreshMatrix();
+        this.scene.add(this.mesh);
+
+        geometry = new Cube(50, 50, 50);
+        material = new BasicMaterial({ color: 0xff0000, opacity: 1 });
         let mesh = new Mesh(geometry, material);
         mesh.locator.translation.x = -100;
-        mesh.locator.translation.z = -100;
+        mesh.locator.translation.y = -100;
+        mesh.locator.translation.z = 26;
+        mesh.locator.refreshMatrix();
         this.scene.add(mesh);
 
         geometry = new Cube(50, 50, 50);
-        material = new BasicMaterial();
+        material = new BasicMaterial({ color: 0x00ff00, opacity: 1 });
         mesh = new Mesh(geometry, material);
         mesh.locator.translation.x = 100;
-        mesh.locator.translation.z = -100;
+        mesh.locator.translation.y = -100;
+        mesh.locator.translation.z = 26;
+        mesh.locator.refreshMatrix();
         this.scene.add(mesh);
     }
 
@@ -82,31 +130,18 @@ export class WebGL_Scene extends Component {
             this.camera.setAspect(w / h);
     }
 
-    cameraRotateX() {
-        this.camera.locator.rotation.x += 10 * Math.PI / 180;
-        this.camera.locator.lookAt([0, 0, 0], [0, 1, 0]);
-    }
-
-    cameraRotateY() {
-        this.camera.locator.rotation.y += 10 * Math.PI / 180;
-        this.camera.locator.lookAt([0, 0, 0], [0, 1, 0]);
-    }
-
-    cameraRotateZ() {
-        this.camera.locator.rotation.z += 10 * Math.PI / 180;
-        this.camera.locator.lookAt([0, 0, 0], [0, 1, 0]);
-    }
-
     meshScaleOut() {
         this.mesh.locator.scale.x += 0.1;
         this.mesh.locator.scale.y += 0.1;
         this.mesh.locator.scale.z += 0.1;
+        this.mesh.locator.refreshMatrix();
     }
 
     meshScaleIn() {
         this.mesh.locator.scale.x -= 0.1;
         this.mesh.locator.scale.y -= 0.1;
         this.mesh.locator.scale.z -= 0.1;
+        this.mesh.locator.refreshMatrix();
     }
 
     render() {
@@ -116,49 +151,39 @@ export class WebGL_Scene extends Component {
                 <Layout className='layout-v' style={{ backgroundColor: '#fff' }}>
                     <div className='toolbar layout-h center'>
                         <Button
+                            className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.cameraRotateX()}>摄像机旋转 X 轴</Button>
+                            onClick={() => this.mesh.locator.matrix.scale([1.1, 1.1, 1.1])}>物体放大</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.cameraRotateY()}>摄像机旋转 Y 轴</Button>
-                        <Button
-                            className='sp-left'
-                            loading={this.state.isBusyService}
-                            onClick={() => this.cameraRotateZ()}>摄像机旋转 Z 轴</Button>
+                            onClick={() => this.mesh.locator.matrix.scale([.9, .9, .9])}>物体缩小</Button>
                         <Divider type="vertical" />
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.meshScaleOut()}>物体放大</Button>
+                            onClick={() => { this.mesh.locator.matrix.translate([5, 0, 0]); }}>物体位移 X</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.meshScaleIn()}>物体缩小</Button>
+                            onClick={() => { this.mesh.locator.matrix.translate([0, 5, 0]); }}>物体位移 Y</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.mesh.locator.translation.x += 5}>物体位移 X</Button>
+                            onClick={() => { this.mesh.locator.matrix.translate([0, 0, 5]); }}>物体位移 Z</Button>
+                        <Divider type="vertical" />
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.mesh.locator.translation.y += 5}>物体位移 Y</Button>
+                            onClick={() => { this.mesh.locator.matrix.rotateX(10 * Math.PI / 180); }}>物体旋转 X</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.mesh.locator.translation.z += 5}>物体位移 Z</Button>
+                            onClick={() => { this.mesh.locator.matrix.rotateY(10 * Math.PI / 180); }}>物体旋转 Y</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.mesh.locator.rotation.x += 5}>物体旋转 X</Button>
-                        <Button
-                            className='sp-left'
-                            loading={this.state.isBusyService}
-                            onClick={() => this.mesh.locator.rotation.y += 5}>物体旋转 Y</Button>
-                        <Button
-                            className='sp-left'
-                            loading={this.state.isBusyService}
-                            onClick={() => this.mesh.locator.rotation.z += 5}>物体旋转 Z</Button>
+                            onClick={() => { this.mesh.locator.matrix.rotateZ(10 * Math.PI / 180); }}>物体旋转 Z</Button>
                     </div>
                     <Layout className='fill' style={{ backgroundColor: '#fff' }}>
                         <WebGLViewer ref={c => this.viewer = c} resize={(w, h) => this.resetAspect(w, h)} />

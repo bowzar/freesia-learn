@@ -4,6 +4,19 @@ export default class Scene {
 
     children = []
 
+    colorR = null
+    colorG = null
+    colorB = null
+
+    constructor({
+        color = 0x0,
+    } = {}) {
+
+        this.colorR = ((color >> 16) & 0x0000ff) / 255;
+        this.colorG = ((color >> 8) & 0x0000ff) / 255;
+        this.colorB = (color & 0x0000ff) / 255;
+    }
+
     add(item) {
         this.children.push(item);
     }
@@ -13,14 +26,41 @@ export default class Scene {
         this.children.splice(index, 1);
     }
 
-    update(gl, camera) {
+    update(viewer, camera) {
 
-        gl.enable(gl.DEPTH_TEST);
-        gl.clearColor(0, 0, 0, 1);
-        gl.clearDepth(1.0);
-        gl.viewport(0.0, 0.0, gl.canvas.width, gl.canvas.height);
+        const gl = viewer.gl;
+
+        gl.clearColor(this.colorR, this.colorG, this.colorB, 1);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        this.children.forEach(c => c.update(gl, camera));
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.viewport(0.0, 0.0, gl.canvas.width, gl.canvas.height);
+
+        this.children.forEach(c => {
+            if (!c.material.isTransparent)
+                c.update(viewer, camera);
+        });
+
+        gl.depthMask(false);
+
+        let meshes = this.getTransparentMeshes();
+        meshes.forEach(c => {
+            c.update(viewer, camera);
+        });
+
+        gl.depthMask(true);
+    }
+
+    getTransparentMeshes() {
+
+        let meshes = [];
+        this.children.forEach(c => {
+            if (c.material.isTransparent)
+                meshes.push(c);
+        });
+
+        return meshes;
     }
 }

@@ -1,7 +1,10 @@
+export { Matrix4, Vector3 } from 'math.gl';
 export { default as WebGLViewer } from './webgl-viewer';
 export { default as Camera } from './camera';
 export { default as Scene } from './scene';
 export { default as Object3d } from './object3d';
 export { default as Mesh } from './mesh';
-export { Cube, Geometry } from './geometry';
-export { Material, BasicMaterial } from './material';
+export { Geometry, Cube, Rectangle, Line } from './geometry';
+export { Material, BasicMaterial, LineBasicMaterial } from './material';
+export { PluginMouse } from './plugins';
+export { MathUtils } from './utils/math-utils';
