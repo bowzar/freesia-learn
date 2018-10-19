@@ -1,6 +1,5 @@
-import { Matrix4, Vector3 } from 'math.gl';
-
-import Material from './material';
+import { Matrix4 } from '../index';
+import { Material } from './index';
 
 export default class BasicMaterial extends Material {
 
@@ -60,7 +59,7 @@ export default class BasicMaterial extends Material {
         let mProjection = camera.matrixProjection;
         let mMesh = mesh.locator.matrix;
         let mView = new Matrix4(camera.locator.matrix);
-        // mView.invert();
+        // mView.inverse();
 
         // let m = new Matrix4(mMesh);
         // m.multiplyRight(mView);

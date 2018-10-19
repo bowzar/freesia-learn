@@ -1,7 +1,6 @@
-import { Vector3, Matrix4 } from 'math.gl';
+import { Matrix4 } from 'math.gl';
 import Animator from '../utils/animator';
-import MathUtils from '../utils/math-utils';
-import { Cube, Mesh, BasicMaterial } from '../index';
+import { Vector3, Cube, Mesh, BasicMaterial } from '../index';
 
 export default class PluginWorldCamera {
 
@@ -170,8 +169,8 @@ export default class PluginWorldCamera {
 
         mZ.multiplyRight(mX);
 
-        MathUtils.vector3MultiplyMatrix4(vector, mZ);
-        MathUtils.vector3SetLength(vector, length);
+        vector.applyMatrix4(mZ);
+        vector.setLength(length);
 
         this.target.x -= vector.x;
         this.target.y -= vector.y;
@@ -205,8 +204,8 @@ export default class PluginWorldCamera {
         mZ.multiplyRight(mX);
 
         let v = new Vector3(0, 1, 0);
-        MathUtils.vector3MultiplyMatrix4(v, mZ);
-        MathUtils.vector3SetLength(v, this.cameraLength);
+        v.applyMatrix4(mZ);
+        v.setLength(this.cameraLength);
 
         this.viewer.camera.locator.translation.x = this.target.x + v.x;
         this.viewer.camera.locator.translation.y = this.target.y + v.y;
@@ -268,7 +267,7 @@ export default class PluginWorldCamera {
             this.targetThetaZ = this.animatorCameraThetaTarget.thetaZ;
         }
 
-        this.animatorCameraTheta.to(this.animatorCameraThetaTarget, 100);
+        this.animatorCameraTheta.to(this.animatorCameraThetaTarget, 2000);
 
         e.preventDefault();
     }
@@ -280,7 +279,7 @@ export default class PluginWorldCamera {
             length = .1;
 
         this.animatorCameraLengthTarget.cameraLength = length;
-        this.animatorCameraLength.to(this.animatorCameraLengthTarget, 1000);
+        this.animatorCameraLength.to(this.animatorCameraLengthTarget, 2000);
     }
 
     onKeyDown(e) {

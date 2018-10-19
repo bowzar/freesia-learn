@@ -102,8 +102,6 @@ export class WebGL_Scene extends Component {
         geometry = new Cube(50, 50, 50);
         material = new BasicMaterial({ color: 0x0000ff, opacity: 1 });
         this.mesh = new Mesh(geometry, material);
-        this.mesh.locator.translation.z = 26;
-        this.mesh.locator.refreshMatrix();
         this.scene.add(this.mesh);
 
         geometry = new Cube(50, 50, 50);
@@ -130,20 +128,6 @@ export class WebGL_Scene extends Component {
             this.camera.setAspect(w / h);
     }
 
-    meshScaleOut() {
-        this.mesh.locator.scale.x += 0.1;
-        this.mesh.locator.scale.y += 0.1;
-        this.mesh.locator.scale.z += 0.1;
-        this.mesh.locator.refreshMatrix();
-    }
-
-    meshScaleIn() {
-        this.mesh.locator.scale.x -= 0.1;
-        this.mesh.locator.scale.y -= 0.1;
-        this.mesh.locator.scale.z -= 0.1;
-        this.mesh.locator.refreshMatrix();
-    }
-
     render() {
 
         return (
@@ -153,37 +137,37 @@ export class WebGL_Scene extends Component {
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.mesh.locator.matrix.scale([1.1, 1.1, 1.1])}>物体放大</Button>
+                            onClick={() => this.mesh.locator.matrix.localScale(1.1, 1.1, 1.1)}>物体放大</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.mesh.locator.matrix.scale([.9, .9, .9])}>物体缩小</Button>
+                            onClick={() => this.mesh.locator.matrix.localScale(.9, .9, .9)}>物体缩小</Button>
                         <Divider type="vertical" />
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.translate([5, 0, 0]); }}>物体位移 X</Button>
+                            onClick={() => { this.mesh.locator.matrix.localTranslate(5, 0, 0); }}>物体位移 X</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.translate([0, 5, 0]); }}>物体位移 Y</Button>
+                            onClick={() => { this.mesh.locator.matrix.localTranslate(0, 5, 0); }}>物体位移 Y</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.translate([0, 0, 5]); }}>物体位移 Z</Button>
+                            onClick={() => { this.mesh.locator.matrix.localTranslate(0, 0, 5); }}>物体位移 Z</Button>
                         <Divider type="vertical" />
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.rotateX(10 * Math.PI / 180); }}>物体旋转 X</Button>
+                            onClick={() => { this.mesh.locator.matrix.localRotateX(10 * Math.PI / 180); }}>物体旋转 X</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.rotateY(10 * Math.PI / 180); }}>物体旋转 Y</Button>
+                            onClick={() => { this.mesh.locator.matrix.localRotateY(10 * Math.PI / 180); }}>物体旋转 Y</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.rotateZ(10 * Math.PI / 180); }}>物体旋转 Z</Button>
+                            onClick={() => { this.mesh.locator.matrix.localRotateZ(10 * Math.PI / 180); }}>物体旋转 Z</Button>
                     </div>
                     <Layout className='fill' style={{ backgroundColor: '#fff' }}>
                         <WebGLViewer ref={c => this.viewer = c} resize={(w, h) => this.resetAspect(w, h)} />

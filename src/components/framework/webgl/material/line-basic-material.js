@@ -1,6 +1,5 @@
-import { Matrix4, Vector3 } from 'math.gl';
-
-import Material from './material';
+import { Matrix4 } from '../index';
+import { Material } from './index';
 
 export default class LineBasicMaterial extends Material {
 

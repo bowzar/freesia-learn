@@ -1,4 +1,4 @@
-import { Matrix4, Vector3 } from 'math.gl';
+import { Matrix4, Vector3 } from '../index';
 
 export default class Locator {
 
@@ -16,18 +16,18 @@ export default class Locator {
 
         let m = new Matrix4();
         if (this.invert) {
-            m.scale(new Vector3(this.scale.x, this.scale.y, this.scale.z));
-            m.rotateX(this.rotation.x);
-            m.rotateY(this.rotation.y);
-            m.rotateZ(this.rotation.z);
-            m.translate(new Vector3(this.translation.x, this.translation.y, this.translation.z))
+            m.localScale(this.scale.x, this.scale.y, this.scale.z);
+            m.localRotateX(this.rotation.x);
+            m.localRotateY(this.rotation.y);
+            m.localRotateZ(this.rotation.z);
+            m.localTranslate(this.translation.x, this.translation.y, this.translation.z)
 
         } else {
-            m.translate(new Vector3(this.translation.x, this.translation.y, this.translation.z))
-            m.rotateX(this.rotation.x);
-            m.rotateY(this.rotation.y);
-            m.rotateZ(this.rotation.z);
-            m.scale(new Vector3(this.scale.x, this.scale.y, this.scale.z));
+            m.localTranslate(this.translation.x, this.translation.y, this.translation.z)
+            m.localRotateX(this.rotation.x);
+            m.localRotateY(this.rotation.y);
+            m.localRotateZ(this.rotation.z);
+            m.localScale(this.scale.x, this.scale.y, this.scale.z);
         }
 
         this.matrix = m;
