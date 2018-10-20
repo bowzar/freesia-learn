@@ -2,9 +2,11 @@ export default class Geometry {
 
     vertices = []
     indices = []
+    colors = []
 
     vertex_buffer = null;
     index_buffer = null;
+
 
     install(gl) {
 

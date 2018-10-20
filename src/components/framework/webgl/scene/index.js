@@ -1,5 +1,3 @@
-import Mesh from '../mesh';
-
 export default class Scene {
 
     children = []

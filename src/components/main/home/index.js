@@ -8,6 +8,7 @@ import { WebGL_Start } from './webgl-start';
 import { WebGL_Texture } from './webgl-texture';
 import { WebGL_Global } from './webgl-global';
 import { WebGL_Scene } from './webgl-scene';
+import { WebGL_Earth } from './webgl-earth';
 
 const { SubMenu } = Menu;
 const { Sider } = Layout;
@@ -36,6 +37,12 @@ const samples = [
         title: 'Scene',
         icon: 'file-text',
         component: WebGL_Scene,
+    },
+    {
+        name: 'earth',
+        title: 'Earth',
+        icon: 'file-text',
+        component: WebGL_Earth,
     }
 ];
 

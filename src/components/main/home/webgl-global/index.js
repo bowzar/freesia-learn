@@ -2,7 +2,6 @@ import React from 'react';
 import Component from '../../../framework/route-component';
 import { Layout } from 'antd';
 import RenderCanvas from '../../../framework/render-canvas';
-import img from './1.jpg';
 
 export class WebGL_Global extends Component {
 

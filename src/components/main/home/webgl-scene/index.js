@@ -1,8 +1,7 @@
 import React from 'react';
 import Component from '../../../framework/route-component';
 import { Layout, Button, Divider } from 'antd';
-import { WebGLViewer, Camera, Scene, Vector3, Mesh, BasicMaterial, Cube, Rectangle, Line, LineBasicMaterial, PluginMouse } from '../../../framework/webgl';
-import { PluginWorldCamera } from '../../../framework/webgl/plugins';
+import { WebGLViewer, Camera, Scene, Vector3, Mesh, BasicMaterial, Cube, Rectangle, Line, LineBasicMaterial, PluginWorldCamera } from '../../../framework/webgl';
 
 export class WebGL_Scene extends Component {
 

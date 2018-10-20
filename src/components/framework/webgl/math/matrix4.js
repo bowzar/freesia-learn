@@ -3,10 +3,6 @@ import { Vector3 } from '../index';
 
 export default class Matrix4 extends GLMatrix4 {
 
-    constructor(...args) {
-        super(...args);
-    }
-
     getPosition() {
         return new Vector3(this[12], this[13], this[14]);
     }
@@ -45,9 +41,9 @@ export default class Matrix4 extends GLMatrix4 {
     }
 
     multiplyColumn(c) {
-        var valid = c.length == 4;
+        var valid = c.length === 4;
         if (!valid) {
-            throw "invalid c";
+            throw new Error("invalid c");
         }
         var values1 = this;
         var values2 = c;

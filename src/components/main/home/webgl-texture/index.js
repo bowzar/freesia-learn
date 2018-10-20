@@ -134,11 +134,10 @@ export class WebGL_Texture extends Component {
 
         function loadTexture(gl, texture, u_Sampler, image) {
 
-            debugger;
             //1.对纹理图像进行Y轴反转
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+            // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
             //2.开启0号纹理单元
-            gl.activeTexture(gl.TEXTURE0);
+            // gl.activeTexture(gl.TEXTURE0);
             //3.向target绑定纹理对象
             gl.bindTexture(gl.TEXTURE_2D, texture);
 
