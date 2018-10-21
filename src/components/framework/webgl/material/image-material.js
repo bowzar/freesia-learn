@@ -116,9 +116,9 @@ export default class ImageMaterial extends Material {
 
             // gl.uniform1i(this.u_Sampler, 0);
 
-            gl.depthFunc(gl.ALWAYS);
+            // gl.depthFunc(gl.ALWAYS);
             gl.drawElements(gl.TRIANGLES, mesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
-            gl.depthFunc(gl.LEQUAL);
+            // gl.depthFunc(gl.LEQUAL);
 
         }
     }
@@ -128,15 +128,15 @@ export default class ImageMaterial extends Material {
         let mProjection = camera.matrixProjection;
         let mMesh = mesh.locator.matrix;
         let mView = new Matrix4(camera.locator.matrix);
-        mView = mView.getInverseMatrix();
+        // mView = mView.getInverseMatrix();
 
         // let m = new Matrix4(mMesh);
         // m.multiplyRight(mView);
         // m.multiplyRight(mProjection);     
 
         let m = new Matrix4(mProjection);
-        m = m.multiplyMatrix(mView);
-        m = m.multiplyMatrix(mMesh);
+        m.multiplyRight(mView);
+        m.multiplyRight(mMesh);
 
         return m;
     }

@@ -107,10 +107,10 @@ export class WebGL_Earth extends Component {
             this.scene.add(line);
         }
 
-        geometry = new Shpere(1000);
-        material = new BasicMaterial({ color: 0xffffff });
-        this.mesh = new Mesh(geometry, material);
-        this.scene.add(this.mesh);
+        // geometry = new Shpere(1000);
+        // material = new BasicMaterial({ color: 0xffffff });
+        // this.mesh = new Mesh(geometry, material);
+        // this.scene.add(this.mesh);
 
 
         // for (let i = 0; i < 16; i++) {

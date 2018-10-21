@@ -56,15 +56,15 @@ export default class LineBasicMaterial extends Material {
         let mProjection = camera.matrixProjection;
         let mMesh = mesh.locator.matrix;
         let mView = new Matrix4(camera.locator.matrix);
-        mView = mView.getInverseMatrix();
+        // mView = mView.getInverseMatrix();
 
         // let m = new Matrix4(mMesh);
         // m.multiplyLeft(mView);
         // m.multiplyLeft(mProjection);     
 
         let m = new Matrix4(mProjection);
-        m = m.multiplyMatrix(mView);
-        m = m.multiplyMatrix(mMesh);
+        m.multiplyRight(mView);
+        m.multiplyRight(mMesh);
 
         return m;
     }

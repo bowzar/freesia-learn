@@ -129,7 +129,7 @@ export default class PluginGlobalCamera {
 
         mZ.multiplyRight(mX);
 
-        let v = new Vector3(1, 0, 0);
+        let v = new Vector3(0, 1, 0);
         v.applyMatrix4(mZ);
         v.setLength(this.cameraLength);
 
@@ -137,7 +137,7 @@ export default class PluginGlobalCamera {
         this.viewer.camera.locator.translation.y = this.target.y + v.y;
         this.viewer.camera.locator.translation.z = this.target.z + v.z;
         this.viewer.camera.locator.refreshMatrix();
-        this.viewer.camera.locator.lookAt([this.target.x, this.target.y, this.target.z], [0, 1, 0]);
+        this.viewer.camera.locator.lookAt([this.target.x, this.target.y, this.target.z], [0, 0, 1]);
     }
 
     onMouseDown(e) {
