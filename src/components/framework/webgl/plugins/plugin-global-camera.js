@@ -125,11 +125,11 @@ export default class PluginGlobalCamera {
         mZ.rotateZ(this.thetaZ);
 
         let mX = new Matrix4();
-        mX.rotateX(this.thetaX);
+        mX.rotateY(this.thetaX);
 
         mZ.multiplyRight(mX);
 
-        let v = new Vector3(0, 1, 0);
+        let v = new Vector3(1, 0, 0);
         v.applyMatrix4(mZ);
         v.setLength(this.cameraLength);
 
@@ -180,7 +180,7 @@ export default class PluginGlobalCamera {
         this.animatorCameraThetaTarget.thetaZ = this.thetaZBk + dThetaZ;
 
         let dy = y - this.ptStart.y;
-        let dThetaX = dy * this.rateRotation;
+        let dThetaX = -dy * this.rateRotation;
         this.animatorCameraThetaTarget.thetaX = this.thetaXBk + dThetaX;
 
         if (this.animatorCameraThetaTarget.thetaX > this.thetaXMax)

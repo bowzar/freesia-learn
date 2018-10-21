@@ -3,7 +3,7 @@ import MathUtils from '../math/utils';
 
 export default class TileSurface extends Geometry {
 
-    constructor(r = 100, radiusLTLat, radiusLTLon, radiusRBLat, radiusRBLon, cntLat = 20, cntLon = 20) {
+    constructor(r = 100, radiusLTLat, radiusLTLon, radiusRBLat, radiusRBLon, cntLat = 16, cntLon = 16) {
         super();
         this.create(r, radiusLTLat, radiusLTLon, radiusRBLat, radiusRBLon, cntLat, cntLon);
     }

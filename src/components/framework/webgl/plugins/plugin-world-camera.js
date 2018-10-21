@@ -72,7 +72,7 @@ export default class PluginWorldCamera {
             .easing(Animator.Easing.Quartic.Out)
             .onUpdate(e => { });
 
-        let geometry = new Cube(10, 50, 10);
+        let geometry = new Cube(50, 10, 10);
         let material = new BasicMaterial({ color: 0xb0517c, opacity: 1 });
         this.mesh = new Mesh(geometry, material);
         this.viewer.scene.add(this.mesh);
@@ -129,22 +129,22 @@ export default class PluginWorldCamera {
         let tx = this.targetThetaX;
 
         if (this.keysStatus.w && this.keysStatus.w.isPress) {
-            vector.y += 1;
+            vector.x += 1;
             time = this.keysStatus.w.time;
             this.keysStatus.w.time = current;
         }
         if (this.keysStatus.s && this.keysStatus.s.isPress) {
-            vector.y -= 1;
+            vector.x -= 1;
             time = this.keysStatus.s.time;
             this.keysStatus.s.time = current;
         }
         if (this.keysStatus.a && this.keysStatus.a.isPress) {
-            vector.x -= 1;
+            vector.y += 1;
             time = this.keysStatus.a.time;
             this.keysStatus.a.time = current;
         }
         if (this.keysStatus.d && this.keysStatus.d.isPress) {
-            vector.x += 1;
+            vector.y -= 1;
             time = this.keysStatus.d.time;
             this.keysStatus.d.time = current;
         }
@@ -165,7 +165,7 @@ export default class PluginWorldCamera {
         mZ.rotateZ(this.targetThetaZ);
 
         let mX = new Matrix4();
-        mX.rotateX(tx);
+        mX.rotateY(tx);
 
         mZ.multiplyRight(mX);
 
@@ -184,8 +184,8 @@ export default class PluginWorldCamera {
         let mt = new Matrix4();
         mt.translate([this.target.x, this.target.y, this.target.z + 6]);
         mt.rotateZ(this.targetThetaZ);
-        mt.rotateX(this.target.z === 0 ? 0 : tx);
-        mt.translate([0, 30, 0]);
+        mt.rotateY(this.target.z === 0 ? 0 : tx);
+        mt.translate([30, 0, 0]);
         this.mesh.locator.matrix = mt;
 
         this.animatorCameraLength.update();
@@ -199,11 +199,11 @@ export default class PluginWorldCamera {
         mZ.rotateZ(this.thetaZ);
 
         let mX = new Matrix4();
-        mX.rotateX(this.thetaX);
+        mX.rotateY(this.thetaX);
 
         mZ.multiplyRight(mX);
 
-        let v = new Vector3(0, 1, 0);
+        let v = new Vector3(1, 0, 0);
         v.applyMatrix4(mZ);
         v.setLength(this.cameraLength);
 
@@ -254,7 +254,7 @@ export default class PluginWorldCamera {
         this.animatorCameraThetaTarget.thetaZ = this.thetaZBk + dThetaZ;
 
         let dy = y - this.ptStart.y;
-        let dThetaX = dy * this.rateRotation;
+        let dThetaX = -dy * this.rateRotation;
         this.animatorCameraThetaTarget.thetaX = this.thetaXBk + dThetaX;
 
         if (this.animatorCameraThetaTarget.thetaX > this.thetaXMax)

@@ -119,13 +119,29 @@ export class WebGL_Earth extends Component {
         //     }
         // }       
 
+
+        // for (let i = 0; i < 2; i++) {
+        //     for (let j = 0; j < 2; j++) {
+        //         this.createEarthTile(1, i, j);
+        //     }
+        // }
+        // for (let i = 0; i < 4; i++) {
+        //     for (let j = 0; j < 4; j++) {
+        //         this.createEarthTile(2, i, j);
+        //     }
+        // }
+
+        // for (let i = 0; i < 8; i++) {
+        //     for (let j = 0; j < 8; j++) {
+        //         this.createEarthTile(3, i, j);
+        //     }
+        // }
         for (let i = 0; i < 16; i++) {
             for (let j = 0; j < 16; j++) {
                 this.createEarthTile(4, i, j);
             }
         }
 
-        // this.createEarthTile(2, 0, 1);
         // this.createEarthTile(2, 1, 1);
         // this.createEarthTile(1, 0, 1);
         // this.createEarthTile(1, 0, 2);
@@ -148,6 +164,8 @@ export class WebGL_Earth extends Component {
     createEarthTile(level, row, col) {
 
         let grid = MathUtils.getTileWebMercatorEnvelopeByGrid(level, row, col, this.earthRV);
+        let segment = 16;
+        // segment += Math.pow(2, level);
 
         // let minX = this.originX + this.tileLength * this.res * col;
         // let maxY = this.originY - this.tileLength * this.res * row;
@@ -157,7 +175,7 @@ export class WebGL_Earth extends Component {
         // let lonLatLT = this.getLonLat(this.earthR, minX, maxY);
         // let lonLatRB = this.getLonLat(this.earthR, maxX, minY);
 
-        let geoTile = new TileSurface(this.earthRV, grid.maxLat, grid.minLon, grid.minLat, grid.maxLon);
+        let geoTile = new TileSurface(this.earthRV, grid.maxLat, grid.minLon, grid.minLat, grid.maxLon, segment, segment);
 
         // let material = new ImageMaterial({ src: `http://services.arcgisonline.com/arcgis/rest/services/ESRI_Imagery_World_2D/MapServer/tile/${level}/${row}/${col}` });
         // let material = new ImageMaterial({ src: `http://server.arcgisonline.com/arcgis/rest/services/ESRI_StreetMap_World_2D/MapServer/tile/${level}/${row}/${col}` });
