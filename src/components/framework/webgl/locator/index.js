@@ -15,27 +15,23 @@ export default class Locator {
     refreshMatrix() {
 
         let m = new Matrix4();
-        if (this.invert) {
-            m.localScale(this.scale.x, this.scale.y, this.scale.z);
-            m.localRotateX(this.rotation.x);
-            m.localRotateY(this.rotation.y);
-            m.localRotateZ(this.rotation.z);
-            m.localTranslate(this.translation.x, this.translation.y, this.translation.z)
+        // if (this.invert) {
+        //     m.localScale(this.scale.x, this.scale.y, this.scale.z);
+        //     m.localRotateX(this.rotation.x);
+        //     m.localRotateY(this.rotation.y);
+        //     m.localRotateZ(this.rotation.z);
+        //     m.localTranslate(this.translation.x, this.translation.y, this.translation.z)
 
-        } else {
-            m.localTranslate(this.translation.x, this.translation.y, this.translation.z)
-            m.localRotateX(this.rotation.x);
-            m.localRotateY(this.rotation.y);
-            m.localRotateZ(this.rotation.z);
-            m.localScale(this.scale.x, this.scale.y, this.scale.z);
-        }
+        // } else {
+        m.localTranslate(this.translation.x, this.translation.y, this.translation.z)
+        m.localRotateX(this.rotation.x);
+        m.localRotateY(this.rotation.y);
+        m.localRotateZ(this.rotation.z);
+        m.localScale(this.scale.x, this.scale.y, this.scale.z);
+        // }
 
         this.matrix = m;
         return m;
-    }
-
-    getMatrix() {
-
     }
 
     lookAt(target, up) {

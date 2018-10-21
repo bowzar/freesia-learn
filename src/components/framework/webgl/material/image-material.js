@@ -61,6 +61,7 @@ export default class ImageMaterial extends Material {
 
         this.image = new Image();
         this.image.onload = () => this.loadTexture(viewer);
+        this.image.crossOrigin = 'anonymous';
         this.image.src = this.imageSrc;
     }
 
@@ -73,6 +74,9 @@ export default class ImageMaterial extends Material {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);// 纹理水平填充方式
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);// 纹理垂直填充方式
+
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.image);
 
         gl.uniform1i(this.u_Sampler, 0);
@@ -106,11 +110,15 @@ export default class ImageMaterial extends Material {
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
             // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);// 纹理水平填充方式
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);// 纹理垂直填充方式
             // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.image);
 
             // gl.uniform1i(this.u_Sampler, 0);
 
+            gl.depthFunc(gl.ALWAYS);
             gl.drawElements(gl.TRIANGLES, mesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+            gl.depthFunc(gl.LEQUAL);
 
         }
     }
@@ -120,15 +128,15 @@ export default class ImageMaterial extends Material {
         let mProjection = camera.matrixProjection;
         let mMesh = mesh.locator.matrix;
         let mView = new Matrix4(camera.locator.matrix);
-        // mView.inverse();
+        mView = mView.getInverseMatrix();
 
         // let m = new Matrix4(mMesh);
         // m.multiplyRight(mView);
         // m.multiplyRight(mProjection);     
 
         let m = new Matrix4(mProjection);
-        m.multiplyRight(mView);
-        m.multiplyRight(mMesh);
+        m = m.multiplyMatrix(mView);
+        m = m.multiplyMatrix(mMesh);
 
         return m;
     }

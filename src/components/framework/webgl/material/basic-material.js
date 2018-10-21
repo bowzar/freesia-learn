@@ -57,17 +57,18 @@ export default class BasicMaterial extends Material {
     createViewMatrix(camera, mesh) {
 
         let mProjection = camera.matrixProjection;
-        let mMesh = mesh.locator.matrix;
         let mView = new Matrix4(camera.locator.matrix);
-        // mView.inverse();
+        mView = mView.getInverseMatrix();
+        
+        let mMesh = mesh.locator.matrix;
 
         // let m = new Matrix4(mMesh);
         // m.multiplyRight(mView);
         // m.multiplyRight(mProjection);     
 
         let m = new Matrix4(mProjection);
-        m.multiplyRight(mView);
-        m.multiplyRight(mMesh);
+        m = m.multiplyMatrix(mView);
+        m = m.multiplyMatrix(mMesh);
 
         return m;
     }

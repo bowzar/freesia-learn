@@ -1,7 +1,7 @@
 import React from 'react';
 import Component from '../../../framework/route-component';
 import { Layout } from 'antd';
-import { WebGLViewer, Camera, Scene, Vector3, Mesh, BasicMaterial, ImageMaterial, Rectangle, Line, Shpere, LineBasicMaterial, PluginWorldCamera, Geometry } from '../../../framework/webgl';
+import { WebGLViewer, MathUtils, Camera, Scene, Vector3, Mesh, BasicMaterial, ImageMaterial, Rectangle, Line, Shpere, LineBasicMaterial, PluginWorldCamera, Geometry, TileSurface, PluginGlobalCamera, CamberedSurface } from '../../../framework/webgl';
 
 import earth_image from './1_earth_8k.jpg';
 import tile_image from './2.jpg';
@@ -15,7 +15,19 @@ export class WebGL_Earth extends Component {
     scene = null;
     mesh = null;
 
-    pluginWorldCamera = null;
+
+    earthR = 6378137;
+    earthRV = 1000;
+    // res = 0.087890625;
+    res = 9783.93962049996;
+    tileLength = 256;
+
+    // originX = -180.0;
+    // originY = 90.0;
+    originX = -2.0037508342787E7;
+    originY = 2.0037508342787E7;
+
+    pluginCamera = null;
 
     state = {
     }
@@ -43,8 +55,8 @@ export class WebGL_Earth extends Component {
 
             if (this.viewer)
                 this.viewer.update();
-            if (this.pluginWorldCamera)
-                this.pluginWorldCamera.update();
+            if (this.pluginCamera)
+                this.pluginCamera.update();
 
             window.requestAnimationFrame(render);
         };
@@ -55,21 +67,20 @@ export class WebGL_Earth extends Component {
     componentWillUnmount() {
         this.shutdown = true;
 
-        this.pluginWorldCamera.uninstall();
-        localStorage.pluginWorldCamera = this.pluginWorldCamera.toJson();
+        this.pluginCamera.uninstall();
     }
 
     createWebGLObjects() {
 
         this.scene = new Scene({ color: 0x0 });
-        this.camera = new Camera(35, 1, 10000);
+        this.camera = new Camera(35, 1, 20000);
         this.camera.setAspect(this.viewer.gl.canvas.width / this.viewer.gl.canvas.height)
         this.viewer.setCamera(this.camera);
         this.viewer.setScene(this.scene);
 
 
-        this.pluginWorldCamera = new PluginWorldCamera(this.viewer);
-        this.pluginWorldCamera.install();
+        this.pluginCamera = new PluginGlobalCamera(this.viewer, { globalR: this.earthRV, cameraLength: this.earthRV * 5 });
+        this.pluginCamera.install();
 
         let width = 5000;
         let height = 5000;
@@ -78,7 +89,7 @@ export class WebGL_Earth extends Component {
         this.mesh = new Mesh(geometry, material);
         this.scene.add(this.mesh);
 
-        let step = 50;
+        let step = 200;
         for (let x = -width / 2; x <= width / 2; x += step) {
 
             geometry = new Line(new Vector3(x, -height / 2, 0), new Vector3(x, height / 2, 0));
@@ -96,61 +107,72 @@ export class WebGL_Earth extends Component {
             this.scene.add(line);
         }
 
-        geometry = new Shpere(500);
-        material = new ImageMaterial({ src: earth_image });
-        material.colors = geometry.colors;
+        geometry = new Shpere(1000);
+        material = new BasicMaterial({ color: 0xffffff });
         this.mesh = new Mesh(geometry, material);
         this.scene.add(this.mesh);
 
-        let earthR = 6378137;
-        let earthRV = 550;
-        let res = 19567.87924099992;
-        let level = 3;
-        let row = 3;
-        let col = 2;
-        let tileLength = 256;
 
-        let originX = -2.0037508342787E7;
-        let originY = 2.0037508342787E7;
+        // for (let i = 0; i < 16; i++) {
+        //     for (let j = 0; j < 16; j++) {
+        //         this.createEarthTile(4, i, j);
+        //     }
+        // }       
 
-        let minX = originX + tileLength * res * col;
-        let maxY = originY - tileLength * res * row;
-        let maxX = minX + tileLength * res;
-        let minY = maxY - tileLength * res;
+        for (let i = 0; i < 16; i++) {
+            for (let j = 0; j < 16; j++) {
+                this.createEarthTile(4, i, j);
+            }
+        }
 
-        let lonLatLT = this.getLonLat(earthR, minX, maxY);
-        let lonLatLB = this.getLonLat(earthR, minX, minY);
-        let lonLatRT = this.getLonLat(earthR, maxX, maxY);
-        let lonLatRB = this.getLonLat(earthR, maxX, minY);
+        // this.createEarthTile(2, 0, 1);
+        // this.createEarthTile(2, 1, 1);
+        // this.createEarthTile(1, 0, 1);
+        // this.createEarthTile(1, 0, 2);
+        // this.createEarthTile(1, 0, 3);
+        // this.createEarthTile(1, 1, 0);
+        // this.createEarthTile(1, 1, 1);
+        // this.createEarthTile(1, 1, 2);
+        // this.createEarthTile(1, 1, 3);
+        // this.createEarthTile(3, 0, 1);
+        // this.createEarthTile(3, 0, 2);
+        // this.createEarthTile(3, 0, 3);
+        // this.createEarthTile(3, 2, 1);
+        // this.createEarthTile(3, 2, 2);
+        // this.createEarthTile(3, 3, 0);
+        // this.createEarthTile(3, 3, 1);
+        // this.createEarthTile(3, 3, 2);
+        // this.createEarthTile(3, 3, 3);
+    }
 
-        let vLT = this.lonLatToVector3(earthRV, lonLatLT.lon, lonLatLT.lat);
-        let vLB = this.lonLatToVector3(earthRV, lonLatLB.lon, lonLatLB.lat);
-        let vRT = this.lonLatToVector3(earthRV, lonLatRT.lon, lonLatRT.lat);
-        let vRB = this.lonLatToVector3(earthRV, lonLatRB.lon, lonLatRB.lat);
+    createEarthTile(level, row, col) {
 
-        let geoTile = new Geometry();
-        geoTile.vertices = [
-            vLT.x, vLT.y, vLT.z,
-            vLB.x, vLB.y, vLB.z,
-            vRB.x, vRB.y, vRB.z,
-            vRT.x, vRT.y, vRT.z,
-        ];
+        let grid = MathUtils.getTileWebMercatorEnvelopeByGrid(level, row, col, this.earthRV);
 
-        geoTile.indices = [
-            0, 1, 2,
-            0, 2, 3
-        ];
+        // let minX = this.originX + this.tileLength * this.res * col;
+        // let maxY = this.originY - this.tileLength * this.res * row;
+        // let maxX = minX + this.tileLength * this.res;
+        // let minY = maxY - this.tileLength * this.res;
 
-        material = new ImageMaterial({ src: tile_image });
-        material.colors = [0, 0, 0, 1, 1, 1, 1, 0];
-        this.mesh = new Mesh(geoTile, material);
-        this.scene.add(this.mesh);
+        // let lonLatLT = this.getLonLat(this.earthR, minX, maxY);
+        // let lonLatRB = this.getLonLat(this.earthR, maxX, minY);
+
+        let geoTile = new TileSurface(this.earthRV, grid.maxLat, grid.minLon, grid.minLat, grid.maxLon);
+
+        // let material = new ImageMaterial({ src: `http://services.arcgisonline.com/arcgis/rest/services/ESRI_Imagery_World_2D/MapServer/tile/${level}/${row}/${col}` });
+        // let material = new ImageMaterial({ src: `http://server.arcgisonline.com/arcgis/rest/services/ESRI_StreetMap_World_2D/MapServer/tile/${level}/${row}/${col}` });
+        // let material = new ImageMaterial({ src: `https://mt0.google.cn/maps/vt?lyrs=y&hl=zh-CN&gl=CN&&x=${col}&y=${row}&z=${level}&scale=2` });
+        let material = new ImageMaterial({ src: `http://server.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/tile/${level}/${row}/${col}` });
+        // let material = new ImageMaterial({ src: `http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/${level}/${row}/${col}` });
+        material.colors = geoTile.colors;
+        let mesh = new Mesh(geoTile, material);
+        this.scene.add(mesh);
     }
 
     getLonLat(r, x, y) {
 
-        let lon = x / r;
-        let lat = y / r;
+        let lon = MathUtils.webMercatorXToRadianLon(x, r);
+        let lat = MathUtils.webMercatorYToRadianLat(y, r);
 
         return { lon, lat };
     }

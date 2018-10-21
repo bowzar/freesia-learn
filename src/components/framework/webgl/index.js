@@ -1,11 +1,11 @@
 export { default as WebGLViewer } from './webgl-viewer';
+export { default as MathUtils } from './math/utils';
 export { default as Camera } from './camera';
 export { default as Scene } from './scene';
 export { default as Object3d } from './object3d';
 export { default as Mesh } from './mesh';
-export { Geometry, Cube, Rectangle, Line, Shpere } from './geometry';
+export { Geometry, Cube, Rectangle, Line, Shpere, CamberedSurface, TileSurface } from './geometry';
 export { Material, BasicMaterial, ImageMaterial, LineBasicMaterial } from './material';
-export { PluginWorldCamera } from './plugins';
-export { MathUtils } from './utils/math-utils';
+export { PluginWorldCamera, PluginGlobalCamera } from './plugins';
 export { default as Vector3 } from './math/vector3';
 export { default as Matrix4 } from './math/matrix4';

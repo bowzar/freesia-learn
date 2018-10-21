@@ -8,7 +8,7 @@ export default class Camera {
     far = null
     aspect = null
     matrixProjection = null;
-    locator = new Locator(true);
+    locator = new Locator(false);
 
     constructor(fovy, near, far) {
         this.fovy = fovy * Math.PI / 180;
