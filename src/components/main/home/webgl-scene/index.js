@@ -1,7 +1,7 @@
 import React from 'react';
 import Component from '../../../framework/route-component';
 import { Layout, Button, Divider } from 'antd';
-import { WebGLViewer, Camera, Scene, Vector3, Mesh, BasicMaterial, Cube, Rectangle, Line, LineBasicMaterial, PluginWorldCamera } from '../../../framework/webgl';
+import { WebGLViewer, Camera, Scene, Vector3, Mesh, GroupMesh, BasicMaterial, Cube, Rectangle, Line, LineBasicMaterial, PluginWorldCamera } from '../../../framework/webgl';
 
 export class WebGL_Scene extends Component {
 
@@ -73,12 +73,16 @@ export class WebGL_Scene extends Component {
         this.pluginWorldCamera = new PluginWorldCamera(this.viewer, opts);
         this.pluginWorldCamera.install();
 
+
+        let ground = new GroupMesh();
+        this.scene.add(ground);
+
         let width = 5000;
         let height = 5000;
         let geometry = new Rectangle(width, height);
         let material = new BasicMaterial({ color: 0x0, opacity: .5 });
         this.mesh = new Mesh(geometry, material);
-        this.scene.add(this.mesh);
+        ground.add(this.mesh);
 
         let step = 50;
         for (let x = -width / 2; x <= width / 2; x += step) {
@@ -88,24 +92,34 @@ export class WebGL_Scene extends Component {
             let line = new Mesh(geometry, material);
             line.locator.translation.z = 1;
             line.locator.refreshMatrix();
-            this.scene.add(line);
+            ground.add(line);
 
             geometry = new Line(new Vector3(-height / 2, x, 0), new Vector3(height / 2, x, 0));
             material = new LineBasicMaterial({ color: 0xdddddd, opacity: 1 });
             line = new Mesh(geometry, material);
             line.locator.translation.z = 1;
             line.locator.refreshMatrix();
-            this.scene.add(line);
+            ground.add(line);
         }
 
-        geometry = new Cube(50, 50, 50);
-        material = new BasicMaterial({ color: 0x0000ff, opacity: 1 });
-        this.mesh = new Mesh(geometry, material);
+        this.mesh = new GroupMesh();
         this.scene.add(this.mesh);
 
         geometry = new Cube(50, 50, 50);
-        material = new BasicMaterial({ color: 0xff0000, opacity: 1 });
+        material = new BasicMaterial({ color: 0x0000ff, opacity: 1 });
         let mesh = new Mesh(geometry, material);
+        this.mesh.add(mesh);
+
+        geometry = new Cube(10, 10, 10);
+        material = new BasicMaterial({ color: 0xffff00, opacity: 1 });
+        mesh = new Mesh(geometry, material);
+        mesh.locator.translation.z = 30;
+        mesh.locator.refreshMatrix();
+        this.mesh.add(mesh);
+
+        geometry = new Cube(50, 50, 50);
+        material = new BasicMaterial({ color: 0xff0000, opacity: 1 });
+        mesh = new Mesh(geometry, material);
         mesh.locator.translation.x = -100;
         mesh.locator.translation.y = -100;
         mesh.locator.translation.z = 26;
@@ -136,37 +150,37 @@ export class WebGL_Scene extends Component {
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.mesh.locator.matrix.localScale(1.1, 1.1, 1.1)}>物体放大</Button>
+                            onClick={() => this.mesh.locator.matrix.worldScale(1.1, 1.1, 1.1)}>物体放大</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => this.mesh.locator.matrix.localScale(.9, .9, .9)}>物体缩小</Button>
+                            onClick={() => this.mesh.locator.matrix.worldScale(.9, .9, .9)}>物体缩小</Button>
                         <Divider type="vertical" />
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.localTranslate(5, 0, 0); }}>物体位移 X</Button>
+                            onClick={() => { this.mesh.locator.matrix.worldTranslate(5, 0, 0); }}>物体位移 X</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.localTranslate(0, 5, 0); }}>物体位移 Y</Button>
+                            onClick={() => { this.mesh.locator.matrix.worldTranslate(0, 5, 0); }}>物体位移 Y</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.localTranslate(0, 0, 5); }}>物体位移 Z</Button>
+                            onClick={() => { this.mesh.locator.matrix.worldTranslate(0, 0, 5); }}>物体位移 Z</Button>
                         <Divider type="vertical" />
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.localRotateX(10 * Math.PI / 180); }}>物体旋转 X</Button>
+                            onClick={() => { this.mesh.locator.matrix.worldRotateX(10 * Math.PI / 180); }}>物体旋转 X</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.localRotateY(10 * Math.PI / 180); }}>物体旋转 Y</Button>
+                            onClick={() => { this.mesh.locator.matrix.worldRotateY(10 * Math.PI / 180); }}>物体旋转 Y</Button>
                         <Button
                             className='sp-left'
                             loading={this.state.isBusyService}
-                            onClick={() => { this.mesh.locator.matrix.localRotateZ(10 * Math.PI / 180); }}>物体旋转 Z</Button>
+                            onClick={() => { this.mesh.locator.matrix.worldRotateZ(10 * Math.PI / 180); }}>物体旋转 Z</Button>
                     </div>
                     <Layout className='fill' style={{ backgroundColor: '#fff' }}>
                         <WebGLViewer ref={c => this.viewer = c} resize={(w, h) => this.resetAspect(w, h)} />

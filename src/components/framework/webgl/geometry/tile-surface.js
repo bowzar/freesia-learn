@@ -59,8 +59,8 @@ export default class TileSurface extends Geometry {
                 this.indices.push(p3);
 
                 this.indices.push(p3);
-                this.indices.push(p4);
                 this.indices.push(p2);
+                this.indices.push(p4);
             }
         }
 

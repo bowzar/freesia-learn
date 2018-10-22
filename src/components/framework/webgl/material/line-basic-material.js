@@ -34,7 +34,7 @@ export default class LineBasicMaterial extends Material {
         this.position = gl.getAttribLocation(program, "position");
     }
 
-    update(viewer, camera, mesh) {
+    update(viewer, camera, mesh, worldMatrix) {
 
         const gl = viewer.gl;
         const p = viewer.programCenter.use(this.vertCode, this.fragCode);
@@ -46,26 +46,8 @@ export default class LineBasicMaterial extends Material {
         gl.vertexAttribPointer(this.position, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(this.position);
 
-        let m = this.createViewMatrix(camera, mesh);
+        let m = this.createViewMatrix(camera, mesh, worldMatrix);
         gl.uniformMatrix4fv(this.matrix, false, m);
         gl.drawArrays(gl.LINES, 0, mesh.geometry.vertices.length / 3);
-    }
-
-    createViewMatrix(camera, mesh) {
-
-        let mProjection = camera.matrixProjection;
-        let mMesh = mesh.locator.matrix;
-        let mView = new Matrix4(camera.locator.matrix);
-        // mView = mView.getInverseMatrix();
-
-        // let m = new Matrix4(mMesh);
-        // m.multiplyLeft(mView);
-        // m.multiplyLeft(mProjection);     
-
-        let m = new Matrix4(mProjection);
-        m.multiplyRight(mView);
-        m.multiplyRight(mMesh);
-
-        return m;
     }
 }

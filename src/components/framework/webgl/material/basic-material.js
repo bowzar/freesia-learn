@@ -34,7 +34,7 @@ export default class BasicMaterial extends Material {
         this.position = gl.getAttribLocation(program, "position");
     }
 
-    update(viewer, camera, mesh) {
+    update(viewer, camera, mesh, worldMatrix) {
 
         const gl = viewer.gl;
         const p = viewer.programCenter.use(this.vertCode, this.fragCode);
@@ -48,28 +48,9 @@ export default class BasicMaterial extends Material {
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.geometry.index_buffer);
 
-        let m = this.createViewMatrix(camera, mesh);
+        let m = this.createViewMatrix(camera, mesh, worldMatrix);
         gl.uniformMatrix4fv(this.matrix, false, m);
 
         gl.drawElements(gl.TRIANGLES, mesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
-    }
-
-    createViewMatrix(camera, mesh) {
-
-        let mProjection = camera.matrixProjection;
-        let mView = new Matrix4(camera.locator.matrix);
-        // mView = mView.getInverseMatrix();
-
-        let mMesh = mesh.locator.matrix;
-
-        // let m = new Matrix4(mMesh);
-        // m.multiplyRight(mView);
-        // m.multiplyRight(mProjection);     
-
-        let m = new Matrix4(mProjection);
-        m.multiplyRight(mView);
-        m.multiplyRight(mMesh);
-
-        return m;
     }
 }

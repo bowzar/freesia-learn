@@ -4,6 +4,14 @@ import { Vector3, Cube, Mesh, BasicMaterial } from '../index';
 
 export default class PluginGlobalCamera {
 
+    REAL_EARTH_RADIUS = 6378137;//meters
+    EARTH_RADIUS = 10000;
+    SCALE_FACTOR = 10000 / 6378137;
+    MAX_REAL_RESOLUTION = 156543.03392800014;
+    MAX_RESOLUTION = 156543.03392800014 * 10000 / 6378137;
+    MIN_RESOLUTION = 156543.03392800014 * 10000 / 6378137 / Math.pow(2, 23);
+
+    resolutionFactor = Math.pow(2, 0.3752950) * 1;
     viewer = null;
     ptStart = null;
     thetaXBk = null;
@@ -40,11 +48,14 @@ export default class PluginGlobalCamera {
     onMouseWheelHandler = null;
     onContextmenuHandler = null;
 
+    resolutionChangedCallback = null;
+
     constructor(viewer, {
-        cameraLength = 500,
+        cameraLength = 156543.03392800014 * 10000 / 6378137,
         globalR = 100,
         thetaX = 0,
         thetaZ = 0,
+        resolutionChanged = null,
         // targetThetaX = 0,
         // targetThetaZ = 0,
         // target = new Vector3(),
@@ -59,6 +70,7 @@ export default class PluginGlobalCamera {
         this.thetaZ = thetaZ;
         this.animatorCameraThetaTarget.thetaX = thetaX;
         this.animatorCameraThetaTarget.thetaZ = thetaZ;
+        this.resolutionChangedCallback = resolutionChanged;
         // this.targetThetaX = targetThetaX;
         // this.targetThetaZ = targetThetaZ;
         //   this.target = target;
@@ -68,7 +80,11 @@ export default class PluginGlobalCamera {
 
         this.animatorCameraLength = new Animator(this)
             .easing(Animator.Easing.Quartic.Out)
-            .onUpdate(e => { });
+            .onUpdate(e => {
+
+                this.raiseResolutionChanged();
+
+            });
 
         this.animatorCameraTheta = new Animator(this)
             .easing(Animator.Easing.Quartic.Out)
@@ -82,6 +98,7 @@ export default class PluginGlobalCamera {
         canvas.addEventListener("contextmenu", this.onContextmenuHandler = this.onContextmenu.bind(this));
 
         this.updateCamera();
+        this.raiseResolutionChanged();
     }
 
     uninstall() {
@@ -92,6 +109,16 @@ export default class PluginGlobalCamera {
         canvas.removeEventListener("mousemove", this.onMouseMoveHandler);
         canvas.removeEventListener("mousewheel", this.onMouseWheelHandler);
         canvas.removeEventListener("contextmenu", this.onContextmenuHandler);
+    }
+
+    raiseResolutionChanged() {
+        if (!this.resolutionChangedCallback)
+            return;
+
+        let resReal = this.cameraLength / this.SCALE_FACTOR;
+        let level = this.calculateLevelByResolution(this.cameraLength);
+
+        this.resolutionChangedCallback({ level: level, resolution: resReal });
     }
 
     toJson() {
@@ -131,7 +158,7 @@ export default class PluginGlobalCamera {
 
         let v = new Vector3(1, 0, 0);
         v.applyMatrix4(mZ);
-        v.setLength(this.cameraLength);
+        v.setLength(this.calculateDistanceToEarthOriginByResolution(this.cameraLength));
 
         this.viewer.camera.locator.translation.x = this.target.x + v.x;
         this.viewer.camera.locator.translation.y = this.target.y + v.y;
@@ -176,11 +203,14 @@ export default class PluginGlobalCamera {
         let y = e.offsetY;
 
         let dx = x - this.ptStart.x;
-        let dThetaZ = -dx * this.rateRotation;
+        let lenZ = -dx * this.cameraLength;
+        let dThetaZ = Math.asin(lenZ / 2 / this.globalR) * 2;
+
         this.animatorCameraThetaTarget.thetaZ = this.thetaZBk + dThetaZ;
 
         let dy = y - this.ptStart.y;
-        let dThetaX = -dy * this.rateRotation;
+        let lenX = -dy * this.cameraLength;
+        let dThetaX = Math.asin(lenX / 2 / this.globalR) * 2;
         this.animatorCameraThetaTarget.thetaX = this.thetaXBk + dThetaX;
 
         if (this.animatorCameraThetaTarget.thetaX > this.thetaXMax)
@@ -193,27 +223,43 @@ export default class PluginGlobalCamera {
             this.targetThetaZ = this.animatorCameraThetaTarget.thetaZ;
         }
 
-        this.animatorCameraTheta.to(this.animatorCameraThetaTarget, 2000);
+        this.animatorCameraTheta.to(this.animatorCameraThetaTarget, 1000);
 
         e.preventDefault();
     }
 
     onMouseWheel(e, delta) {
 
-        let length = (this.animatorCameraLengthTarget.cameraLength - this.globalR);
+        let length = this.animatorCameraLengthTarget.cameraLength;
         if (e.wheelDelta > 0)
             length /= 2;
         else
             length *= 2;
 
-        length += this.globalR;
+        // length += this.globalR;
 
-        if (length < this.globalR + 1)
-            length = this.globalR + 1;
-        if (length >= 8 * this.globalR)
-            length = 8 * this.globalR;
+        if (length < this.MIN_RESOLUTION)
+            length = this.MIN_RESOLUTION;
+        if (length > this.MAX_RESOLUTION)
+            length = this.MAX_RESOLUTION;
 
         this.animatorCameraLengthTarget.cameraLength = length;
         this.animatorCameraLength.to(this.animatorCameraLengthTarget, 2000);
+    }
+
+    calculateDistanceToEarthOriginByResolution(resolution) {
+        // resolution /= this.resolutionFactor;
+        var α2 = this.viewer.camera.fovy / 2;
+        var α1 = Math.atan(2 / this.viewer.gl.canvas.height * Math.tan(α2));
+        var β = resolution / this.globalR;
+        var δ = α1 + β;
+        var distance2EarthOrigin = this.globalR * Math.sin(δ) / Math.sin(α1);
+        return distance2EarthOrigin;
+    }
+
+    calculateLevelByResolution(resolution) {
+        var pow2value = this.MAX_RESOLUTION / resolution;
+        var bestDisplayLevelFloat = Math.log2(pow2value);
+        return bestDisplayLevelFloat;
     }
 }

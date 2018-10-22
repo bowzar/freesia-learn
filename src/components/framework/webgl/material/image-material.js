@@ -21,6 +21,7 @@ export default class ImageMaterial extends Material {
         "gl_FragColor = texture2D(u_Sampler, v_TexCoord);" +
         '}';
 
+    gl = null;
     program = null
     matrix = null
     position = null
@@ -32,6 +33,9 @@ export default class ImageMaterial extends Material {
     color_buffer = null
     texture = null
     u_Sampler = null
+
+    disposed = false;
+
 
     constructor({
         src = '',
@@ -46,7 +50,8 @@ export default class ImageMaterial extends Material {
         if (this.matrix)
             return;
 
-        const gl = viewer.gl;
+        this.gl = viewer.gl;
+        const gl = this.gl;
 
         this.color_buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.color_buffer);
@@ -63,9 +68,25 @@ export default class ImageMaterial extends Material {
         this.image.onload = () => this.loadTexture(viewer);
         this.image.crossOrigin = 'anonymous';
         this.image.src = this.imageSrc;
+
+        this.disposed = false;
+    }
+
+    dispose() {
+
+        this.disposed = true;
+        if (!this.gl)
+            return;
+
+        this.gl.deleteTexture(this.texture);
+        this.gl = null;
+        this.texture = null;
     }
 
     loadTexture(viewer) {
+
+        if (this.disposed)
+            return;
 
         const gl = viewer.gl;
         this.program = viewer.programCenter.use(this.vertCode, this.fragCode);
@@ -74,6 +95,7 @@ export default class ImageMaterial extends Material {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);// 纹理水平填充方式
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);// 纹理垂直填充方式
 
@@ -84,7 +106,7 @@ export default class ImageMaterial extends Material {
         this.imageLoaded = true;
     }
 
-    update(viewer, camera, mesh) {
+    update(viewer, camera, mesh, worldMatrix) {
 
         const gl = viewer.gl;
         this.program = viewer.programCenter.use(this.vertCode, this.fragCode);
@@ -102,7 +124,7 @@ export default class ImageMaterial extends Material {
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.geometry.index_buffer);
 
-        let m = this.createViewMatrix(camera, mesh);
+        let m = this.createViewMatrix(camera, mesh, worldMatrix);
         gl.uniformMatrix4fv(this.matrix, false, m);
 
         if (this.imageLoaded) {
@@ -121,23 +143,5 @@ export default class ImageMaterial extends Material {
             // gl.depthFunc(gl.LEQUAL);
 
         }
-    }
-
-    createViewMatrix(camera, mesh) {
-
-        let mProjection = camera.matrixProjection;
-        let mMesh = mesh.locator.matrix;
-        let mView = new Matrix4(camera.locator.matrix);
-        // mView = mView.getInverseMatrix();
-
-        // let m = new Matrix4(mMesh);
-        // m.multiplyRight(mView);
-        // m.multiplyRight(mProjection);     
-
-        let m = new Matrix4(mProjection);
-        m.multiplyRight(mView);
-        m.multiplyRight(mMesh);
-
-        return m;
     }
 }

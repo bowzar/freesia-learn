@@ -11,7 +11,19 @@ export default class Mesh {
         this.material = material;
     }
 
-    update(viewer, camera) {
-        this.material.update(viewer, camera, this);
+    isTransparent() {
+        return this.material && this.material.isTransparent ? this.material.isTransparent : false;
+    }
+
+    update(viewer, camera, worldMatrix) {
+        this.material.update(viewer, camera, this, worldMatrix);
+    }
+
+    dispose() {
+
+        if (this.geometry)
+            this.geometry.dispose();
+        if (this.material)
+            this.material.dispose();
     }
 }

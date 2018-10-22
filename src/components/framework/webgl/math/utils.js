@@ -1,13 +1,13 @@
 export default class MathUtils {
 
     static getTileWebMercatorEnvelopeByGrid(level, row, column, r) {
-        var k = Math.PI * r;
-        var size = 2 * k / Math.pow(2, level);
-        var minX = -k + column * size;
-        var maxX = minX + size;
-        var maxY = k - row * size;
-        var minY = maxY - size;
-        var Eproj = {
+        let k = Math.PI * r;
+        let size = 2 * k / Math.pow(2, level);
+        let minX = -k + column * size;
+        let maxX = minX + size;
+        let maxY = k - row * size;
+        let minY = maxY - size;
+        let Eproj = {
             minLon: MathUtils.webMercatorXToRadianLon(minX, r),
             minLat: MathUtils.webMercatorYToRadianLat(minY, r),
             maxLon: MathUtils.webMercatorXToRadianLon(maxX, r),
@@ -15,7 +15,6 @@ export default class MathUtils {
         };
         return Eproj;
     }
-
 
     static webMercatorYToRadianLat(y, r) {
 

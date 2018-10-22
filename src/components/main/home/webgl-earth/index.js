@@ -1,10 +1,14 @@
 import React from 'react';
 import Component from '../../../framework/route-component';
 import { Layout } from 'antd';
-import { WebGLViewer, MathUtils, Camera, Scene, Vector3, Mesh, BasicMaterial, ImageMaterial, Rectangle, Line, Shpere, LineBasicMaterial, PluginWorldCamera, Geometry, TileSurface, PluginGlobalCamera, CamberedSurface } from '../../../framework/webgl';
+import {
+    WebGLViewer, MathUtils, Camera, Scene, Vector3, Mesh,
+    BasicMaterial, ImageMaterial, Rectangle, Line, Shpere, LineBasicMaterial,
+    PluginWorldCamera, PluginGlobalCameraZoom, Geometry,
+    TileSurface, TileLayer, Tile, PluginGlobalCamera, PluginGlobalRotation, CamberedSurface
+} from '../../../framework/webgl';
 
 import earth_image from './1_earth_8k.jpg';
-import tile_image from './2.jpg';
 
 
 export class WebGL_Earth extends Component {
@@ -14,10 +18,10 @@ export class WebGL_Earth extends Component {
     camera = null;
     scene = null;
     mesh = null;
-
+    tileLayer = null;
 
     earthR = 6378137;
-    earthRV = 1000;
+    earthRV = 10000;
     // res = 0.087890625;
     res = 9783.93962049996;
     tileLength = 256;
@@ -28,6 +32,7 @@ export class WebGL_Earth extends Component {
     originY = 2.0037508342787E7;
 
     pluginCamera = null;
+    pluginRotation = null;
 
     state = {
     }
@@ -57,6 +62,8 @@ export class WebGL_Earth extends Component {
                 this.viewer.update();
             if (this.pluginCamera)
                 this.pluginCamera.update();
+            if (this.pluginRotation)
+                this.pluginRotation.update();
 
             window.requestAnimationFrame(render);
         };
@@ -73,14 +80,30 @@ export class WebGL_Earth extends Component {
     createWebGLObjects() {
 
         this.scene = new Scene({ color: 0x0 });
-        this.camera = new Camera(35, 1, 20000);
+        this.camera = new Camera(35, 1, 2000000);
         this.camera.setAspect(this.viewer.gl.canvas.width / this.viewer.gl.canvas.height)
         this.viewer.setCamera(this.camera);
         this.viewer.setScene(this.scene);
 
+        // geometry = new Shpere(1000);
+        // material = new ImageMaterial({ src: earth_image });
+        // material.colors = geometry.colors;
+        // this.mesh = new Mesh(geometry, material);
+        // this.scene.add(this.mesh);
 
-        this.pluginCamera = new PluginGlobalCamera(this.viewer, { globalR: this.earthRV, cameraLength: this.earthRV * 5 });
-        this.pluginCamera.install();
+        geometry = new Shpere(this.globalR);
+        material = new BasicMaterial({ color: 0xffffff });
+        this.mesh = new Mesh(geometry, material);
+        this.scene.add(this.mesh);
+
+        this.tileLayer = new TileLayer({
+            radius: this.earthRV,
+            url: 'http://server.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/tile'
+        });
+        this.scene.add(this.tileLayer);
+
+        // this.pluginRotation = new PluginGlobalRotation(this.viewer, { mesh: this.tileLayer });
+        // this.pluginRotation.install();
 
         let width = 5000;
         let height = 5000;
@@ -107,64 +130,25 @@ export class WebGL_Earth extends Component {
             this.scene.add(line);
         }
 
-        // geometry = new Shpere(1000);
-        // material = new BasicMaterial({ color: 0xffffff });
-        // this.mesh = new Mesh(geometry, material);
-        // this.scene.add(this.mesh);
+        this.pluginCamera = new PluginGlobalCamera(this.viewer, {
+            globalR: this.earthRV, resolutionChanged: (args) => {
+                this.setState({ level: args.level, resolution: args.resolution });
+                this.tileLayer.changeLevel(args.level);
 
-
-        // for (let i = 0; i < 16; i++) {
-        //     for (let j = 0; j < 16; j++) {
-        //         this.createEarthTile(4, i, j);
-        //     }
-        // }       
-
-
-        // for (let i = 0; i < 2; i++) {
-        //     for (let j = 0; j < 2; j++) {
-        //         this.createEarthTile(1, i, j);
-        //     }
-        // }
-        // for (let i = 0; i < 4; i++) {
-        //     for (let j = 0; j < 4; j++) {
-        //         this.createEarthTile(2, i, j);
-        //     }
-        // }
-
-        // for (let i = 0; i < 8; i++) {
-        //     for (let j = 0; j < 8; j++) {
-        //         this.createEarthTile(3, i, j);
-        //     }
-        // }
-        for (let i = 0; i < 16; i++) {
-            for (let j = 0; j < 16; j++) {
-                this.createEarthTile(4, i, j);
             }
-        }
-
-        // this.createEarthTile(2, 1, 1);
-        // this.createEarthTile(1, 0, 1);
-        // this.createEarthTile(1, 0, 2);
-        // this.createEarthTile(1, 0, 3);
-        // this.createEarthTile(1, 1, 0);
-        // this.createEarthTile(1, 1, 1);
-        // this.createEarthTile(1, 1, 2);
-        // this.createEarthTile(1, 1, 3);
-        // this.createEarthTile(3, 0, 1);
-        // this.createEarthTile(3, 0, 2);
-        // this.createEarthTile(3, 0, 3);
-        // this.createEarthTile(3, 2, 1);
-        // this.createEarthTile(3, 2, 2);
-        // this.createEarthTile(3, 3, 0);
-        // this.createEarthTile(3, 3, 1);
-        // this.createEarthTile(3, 3, 2);
-        // this.createEarthTile(3, 3, 3);
+        });
+        this.pluginCamera.install();
     }
 
     createEarthTile(level, row, col) {
 
         let grid = MathUtils.getTileWebMercatorEnvelopeByGrid(level, row, col, this.earthRV);
-        let segment = 16;
+        let segment = 1;
+
+        if (level < 6) {
+            var changeLevel = 6 - level;
+            segment = Math.pow(2, changeLevel);
+        }
         // segment += Math.pow(2, level);
 
         // let minX = this.originX + this.tileLength * this.res * col;
@@ -179,12 +163,14 @@ export class WebGL_Earth extends Component {
 
         // let material = new ImageMaterial({ src: `http://services.arcgisonline.com/arcgis/rest/services/ESRI_Imagery_World_2D/MapServer/tile/${level}/${row}/${col}` });
         // let material = new ImageMaterial({ src: `http://server.arcgisonline.com/arcgis/rest/services/ESRI_StreetMap_World_2D/MapServer/tile/${level}/${row}/${col}` });
-        // let material = new ImageMaterial({ src: `https://mt0.google.cn/maps/vt?lyrs=y&hl=zh-CN&gl=CN&&x=${col}&y=${row}&z=${level}&scale=2` });
-        let material = new ImageMaterial({ src: `http://server.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/tile/${level}/${row}/${col}` });
+        let material = new ImageMaterial({ src: `https://mt0.google.cn/maps/vt?lyrs=y&hl=zh-CN&gl=CN&&x=${col}&y=${row}&z=${level}&scale=2` });
+        // let material = new ImageMaterial({ src: `http://server.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/tile/${level}/${row}/${col}` });
         // let material = new ImageMaterial({ src: `http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/${level}/${row}/${col}` });
         material.colors = geoTile.colors;
-        let mesh = new Mesh(geoTile, material);
-        this.scene.add(mesh);
+        let mesh = new Tile(geoTile, material, {
+            level: 0, row, col
+        });
+        this.tileLayer.add(mesh);
     }
 
     getLonLat(r, x, y) {
@@ -215,8 +201,9 @@ export class WebGL_Earth extends Component {
         return (
             <Layout style={{ backgroundColor: '#fff' }}>
                 <Layout className='layout-v' style={{ backgroundColor: '#fff' }}>
-                    <Layout className='fill' style={{ backgroundColor: '#fff' }}>
+                    <Layout className='fill' style={{ backgroundColor: '#fff', position: 'relative' }}>
                         <WebGLViewer ref={c => this.viewer = c} resize={(w, h) => this.resetAspect(w, h)} />
+                        <div className='gl-widget' style={{ left: 5, bottom: 3 }}>{`level: ${Math.round(this.state.level)}, resolution: ${this.state.resolution}`}</div>
                     </Layout>
                 </Layout>
             </Layout >

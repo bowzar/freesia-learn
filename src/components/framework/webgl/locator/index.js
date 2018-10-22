@@ -45,6 +45,34 @@ export default class Locator {
         this.matrix = m;
         return m;
     }
+
+    calculatePvmMatrix(projectionMatrix, viewMatrix, worldMatrix) {
+
+        let mProjection = projectionMatrix;
+        let mView = viewMatrix;
+        // mView = mView.getInverseMatrix();
+        let mMesh = this.calculateMatrixByWorldMatrix(worldMatrix);
+
+        // let m = new Matrix4(mMesh);
+        // m.multiplyRight(mView);
+        // m.multiplyRight(mProjection);     
+
+        let m = new Matrix4(mProjection);
+        m.multiplyRight(mView);
+        m.multiplyRight(mMesh);
+
+        return m;
+    }
+
+    calculateMatrixByWorldMatrix(worldMatrix) {
+
+        if (!worldMatrix)
+            worldMatrix = new Matrix4();
+
+        let m = new Matrix4(worldMatrix);
+        m.multiplyRight(this.matrix);
+        return m;
+    }
 }
 
 class Translation {
