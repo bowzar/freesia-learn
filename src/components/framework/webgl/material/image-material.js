@@ -14,7 +14,7 @@ export default class ImageMaterial extends Material {
         '}';
 
     fragCode =
-        'precision mediump float;' +
+        'precision highp  float;' +
         "uniform sampler2D u_Sampler;" +
         "varying vec2 v_TexCoord;" +
         'void main(void) {' +

@@ -21,7 +21,7 @@ export class WebGL_Earth extends Component {
     tileLayer = null;
 
     earthR = 6378137;
-    earthRV = 10000;
+    earthRV = 1000;
     // res = 0.087890625;
     res = 9783.93962049996;
     tileLength = 256;
@@ -35,6 +35,7 @@ export class WebGL_Earth extends Component {
     pluginRotation = null;
 
     state = {
+        center: {}
     }
 
     createRouteDescriptor() {
@@ -80,7 +81,7 @@ export class WebGL_Earth extends Component {
     createWebGLObjects() {
 
         this.scene = new Scene({ color: 0x0 });
-        this.camera = new Camera(35, 1, 2000000);
+        this.camera = new Camera(15, 0.01, 60000);
         this.camera.setAspect(this.viewer.gl.canvas.width / this.viewer.gl.canvas.height)
         this.viewer.setCamera(this.camera);
         this.viewer.setScene(this.scene);
@@ -91,50 +92,60 @@ export class WebGL_Earth extends Component {
         // this.mesh = new Mesh(geometry, material);
         // this.scene.add(this.mesh);
 
-        geometry = new Shpere(this.globalR);
-        material = new BasicMaterial({ color: 0xffffff });
-        this.mesh = new Mesh(geometry, material);
-        this.scene.add(this.mesh);
+        // geometry = new Shpere(this.earthRV);
+        // material = new BasicMaterial({ color: 0xffffff });
+        // this.mesh = new Mesh(geometry, material);
+        // this.scene.add(this.mesh);
 
         this.tileLayer = new TileLayer({
             radius: this.earthRV,
-            url: 'http://server.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/tile'
+            // url: 'http://server.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/tile'
+            // urlGetter: (level, row, col) => `https://mt0.google.cn/maps/vt?lyrs=y&hl=zh-CN&gl=CN&&x=${col}&y=${row}&z=${level}&scale=2`
+            urlGetter: (level, row, col) => `http://server.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/tile/${level}/${row}/${col}`
         });
         this.scene.add(this.tileLayer);
+
+        // this.tileLayer = new TileLayer({
+        //     radius: this.earthRV,
+        //     // url: 'http://server.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/tile'
+        //     // urlGetter: (level, row, col) => `https://mt0.google.cn/maps/vt?lyrs=y&hl=zh-CN&gl=CN&&x=${col}&y=${row}&z=${level}&scale=2`
+        //     urlGetter: (level, row, col) => `http://localhost:8808/services/default/layers/test2/tiles/${level}/${row}/${col}`
+        // });
+        // this.scene.add(this.tileLayer);
 
         // this.pluginRotation = new PluginGlobalRotation(this.viewer, { mesh: this.tileLayer });
         // this.pluginRotation.install();
 
-        let width = 5000;
-        let height = 5000;
-        let geometry = new Rectangle(width, height);
-        let material = new BasicMaterial({ color: 0x0, opacity: 0 });
-        this.mesh = new Mesh(geometry, material);
-        this.scene.add(this.mesh);
+        // let width = 5000;
+        // let height = 5000;
+        // let geometry = new Rectangle(width, height);
+        // let material = new BasicMaterial({ color: 0x0, opacity: 0 });
+        // this.mesh = new Mesh(geometry, material);
+        // this.scene.add(this.mesh);
 
-        let step = 200;
-        for (let x = -width / 2; x <= width / 2; x += step) {
+        // let step = 200;
+        // for (let x = -width / 2; x <= width / 2; x += step) {
 
-            geometry = new Line(new Vector3(x, -height / 2, 0), new Vector3(x, height / 2, 0));
-            material = new LineBasicMaterial({ color: 0xdddddd, opacity: 1 });
-            let line = new Mesh(geometry, material);
-            line.locator.translation.z = 1;
-            line.locator.refreshMatrix();
-            this.scene.add(line);
+        //     geometry = new Line(new Vector3(x, -height / 2, 0), new Vector3(x, height / 2, 0));
+        //     material = new LineBasicMaterial({ color: 0xdddddd, opacity: 1 });
+        //     let line = new Mesh(geometry, material);
+        //     line.locator.translation.z = 1;
+        //     line.locator.refreshMatrix();
+        //     this.scene.add(line);
 
-            geometry = new Line(new Vector3(-height / 2, x, 0), new Vector3(height / 2, x, 0));
-            material = new LineBasicMaterial({ color: 0xdddddd, opacity: 1 });
-            line = new Mesh(geometry, material);
-            line.locator.translation.z = 1;
-            line.locator.refreshMatrix();
-            this.scene.add(line);
-        }
+        //     geometry = new Line(new Vector3(-height / 2, x, 0), new Vector3(height / 2, x, 0));
+        //     material = new LineBasicMaterial({ color: 0xdddddd, opacity: 1 });
+        //     line = new Mesh(geometry, material);
+        //     line.locator.translation.z = 1;
+        //     line.locator.refreshMatrix();
+        //     this.scene.add(line);
+        // }
 
         this.pluginCamera = new PluginGlobalCamera(this.viewer, {
-            globalR: this.earthRV, resolutionChanged: (args) => {
-                this.setState({ level: args.level, resolution: args.resolution });
-                this.tileLayer.changeLevel(args.level);
-
+            globalR: this.earthRV,
+            resolutionChanged: (args) => {
+                this.setState({ center: args });
+                this.tileLayer.render(args);
             }
         });
         this.pluginCamera.install();
@@ -203,7 +214,8 @@ export class WebGL_Earth extends Component {
                 <Layout className='layout-v' style={{ backgroundColor: '#fff' }}>
                     <Layout className='fill' style={{ backgroundColor: '#fff', position: 'relative' }}>
                         <WebGLViewer ref={c => this.viewer = c} resize={(w, h) => this.resetAspect(w, h)} />
-                        <div className='gl-widget' style={{ left: 5, bottom: 3 }}>{`level: ${Math.round(this.state.level)}, resolution: ${this.state.resolution}`}</div>
+                        <div className='gl-widget' style={{ left: 5, bottom: 3 }}>{`level: ${Math.round(this.state.center.level)}, resolution: ${this.state.center.resolution}`}</div>
+                        <div className='gl-widget' style={{ right: 5, bottom: 3, textAlign: 'right' }}>{`lon: ${Math.round(this.state.center.lon * 10000) / 10000}, lat: ${Math.round(this.state.center.lat * 10000) / 10000}, x: ${Math.round(this.state.center.centerX * 10000) / 10000}, y: ${Math.round(this.state.center.centerY * 10000) / 10000}, row: ${this.state.center.centerRow}, col: ${this.state.center.centerCol}`}</div>
                     </Layout>
                 </Layout>
             </Layout >
