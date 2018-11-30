@@ -8,7 +8,7 @@ export default class PluginGlobalCamera {
     SCALE_FACTOR = 1000 / 6378137;
     MAX_REAL_RESOLUTION = 156543.03392800014;
     MAX_RESOLUTION = 156543.03392800014 * 1000 / 6378137;
-    MIN_RESOLUTION = 156543.03392800014 * 1000 / 6378137 / Math.pow(2, 21);
+    MIN_RESOLUTION = 156543.03392800014 * 1000 / 6378137 / Math.pow(2, 24);
 
     resolutionFactor = Math.pow(2, 0.3752950) * 1.0;
     resolution = null;
@@ -228,16 +228,26 @@ export default class PluginGlobalCamera {
 
         mZ.multiplyRight(mX);
 
+        // let v = new Vector3(1, 0, 0);
+        // v.applyMatrix4(mZ);
+        // v.setLength(this.globalR);
+
+        // this.target.x = v.x;
+        // this.target.y = v.y;
+        // this.target.z = v.z;
+
+        let len = this.calculateDistanceToEarthOriginByResolution(this.cameraLength);
+        // mZ.rotateZ(this.rThetaX);
+        // mZ.rotateY(this.rThetaY);
+
         let v = new Vector3(1, 0, 0);
         v.applyMatrix4(mZ);
 
-        let len = this.calculateDistanceToEarthOriginByResolution(this.cameraLength);
-        console.log(len);
         v.setLength(len);
 
-        this.viewer.camera.locator.translation.x = this.target.x + v.x;
-        this.viewer.camera.locator.translation.y = this.target.y + v.y;
-        this.viewer.camera.locator.translation.z = this.target.z + v.z;
+        this.viewer.camera.locator.translation.x = v.x;
+        this.viewer.camera.locator.translation.y = v.y;
+        this.viewer.camera.locator.translation.z = v.z;
         // }
         // else {
         //     this.viewer.camera.locator.translation.x = this.cameraX;
@@ -246,11 +256,13 @@ export default class PluginGlobalCamera {
         //     this.viewer.camera.locator.refreshMatrix();
         // }
 
+
+
         this.viewer.camera.locator.refreshMatrix();
         this.viewer.camera.locator.lookAt([this.target.x, this.target.y, this.target.z], [0, 0, 1]);
 
-        this.viewer.camera.locator.matrix.worldRotateY(this.rThetaX);
-        this.viewer.camera.locator.matrix.worldRotateX(this.rThetaY);
+        // this.viewer.camera.locator.matrix.worldRotateY(this.rThetaX);
+        // this.viewer.camera.locator.matrix.worldRotateX(this.rThetaY);
     }
 
     onMouseDown(e) {
@@ -295,8 +307,12 @@ export default class PluginGlobalCamera {
             let dx = x - this.ptStart.x;
             let dy = y - this.ptStart.y;
 
-            this.rThetaX = this.rThetaXBk + dx * this.rateRotation * .1;
-            this.rThetaY = this.rThetaYBk - dy * this.rateRotation * .1;
+            this.rThetaX = this.rThetaXBk + dx * this.rateRotation * 1;
+            this.rThetaY = this.rThetaYBk + dy * this.rateRotation * 1;
+
+            // this.animatorCameraTranslation.to(this.animatorCameraTranslationTarget, 500);
+
+
         }
         else {
             let x = e.offsetX;
@@ -317,26 +333,6 @@ export default class PluginGlobalCamera {
             if (this.animatorCameraThetaTarget.thetaX < -this.thetaXMax)
                 this.animatorCameraThetaTarget.thetaX = -this.thetaXMax;
 
-
-            let mZ = new Matrix4();
-            mZ.rotateZ(this.animatorCameraThetaTarget.thetaZ);
-
-            let mX = new Matrix4();
-            mX.rotateY(this.animatorCameraThetaTarget.thetaX);
-
-            mZ.multiplyRight(mX);
-
-            let v = new Vector3(1, 0, 0);
-            v.applyMatrix4(mZ);
-
-            let len = this.calculateDistanceToEarthOriginByResolution(this.cameraLength);
-            v.setLength(len);
-
-            this.animatorCameraTranslationTarget.cameraX = v.x;
-            this.animatorCameraTranslationTarget.cameraY = v.y;
-            this.animatorCameraTranslationTarget.cameraZ = v.z;
-
-            this.animatorCameraTranslation.to(this.animatorCameraTranslationTarget, 500);
             this.animatorCameraTheta.to(this.animatorCameraThetaTarget, 500);
         }
 
